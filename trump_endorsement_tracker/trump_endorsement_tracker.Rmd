@@ -1,0 +1,135 @@
+Loading libraries
+```{r}
+library(tidyverse)
+library(janitor)
+library(googlesheets4)
+```
+Loading in endorsement data:
+```{r}
+## Governor endorsements
+gov_endorsements <- read_sheet("1ux00XtIHLrmhrm6yw3PqUaAUG3LBm1ZMm33gEsTAaHo", sheet = "Governor") %>%
+  row_to_names(1) %>%
+  clean_names()
+
+gov_endorsements[is.na(gov_endorsements)] <- "0"
+
+gov_endorsements <- gov_endorsements %>%
+  filter(win_lose_election != "0")
+
+##Senate endorsements
+senate_endorsements <- read_sheet("1ux00XtIHLrmhrm6yw3PqUaAUG3LBm1ZMm33gEsTAaHo", sheet = "U.S. Senate") %>%
+  row_to_names(1) %>%
+  clean_names()
+
+senate_endorsements[is.na(senate_endorsements)] <- "0"
+
+senate_endorsements <- senate_endorsements %>%
+  filter(win_lose_election != "0") %>%
+  filter(candidate != "Mo Brooks")
+
+##House endorsements
+house_endorsements <- read_sheet("1ux00XtIHLrmhrm6yw3PqUaAUG3LBm1ZMm33gEsTAaHo", sheet = "U.S. House") %>%
+  row_to_names(1) %>%
+  clean_names()
+
+house_endorsements[is.na(house_endorsements)] <- "0"
+
+house_endorsements <- house_endorsements %>%
+  mutate(win_lose_election = case_when(win_lose_election == "Advanced to Gen" ~ "Y",
+                                       TRUE ~ win_lose_election)) %>%
+  filter(win_lose_election != "0") %>%
+  filter(win_lose_election != "Dropped Out")
+
+## How many Trump-endorsed Gov candidates have won?
+gov_wins <- gov_endorsements %>%
+  filter(win_lose_election == "Y") %>%
+  count()
+
+gov_wins <- paste(gov_wins <- gov_endorsements %>%
+  filter(win_lose_election == "Y") %>%
+  count())
+
+gov_losses <- gov_endorsements %>%
+  filter(win_lose_election == "N") %>%
+  count()
+
+gov_losses <- paste(gov_losses <- gov_endorsements %>%
+  filter(win_lose_election == "N") %>%
+  count())
+
+gov_primaries_completed <- gov_endorsements %>%
+  count()
+
+gov_primaries_completed <- paste(gov_primaries_completed <- gov_endorsements %>%
+  count())
+
+gov_primaries_completed <- as.numeric(gov_primaries_completed)
+
+gov_losses <- as.numeric(gov_losses)
+
+gov_wins <- as.numeric(gov_wins)
+
+gov_wins/gov_primaries_completed
+
+## Have won 73% of races, or 8/11
+
+## How many Trump-endorsed House candidates have won?
+
+house_wins <- house_endorsements %>%
+  filter(win_lose_election == "Y") %>%
+  count()
+
+house_wins <- paste(house_wins <- house_endorsements %>%
+  filter(win_lose_election == "Y") %>%
+  count())
+
+house_wins <- as.numeric(house_wins)
+
+
+house_losses <- house_endorsements %>%
+  filter(win_lose_election == "N") %>%
+  count()
+
+house_losses <- paste(house_losses <- house_endorsements %>%
+  filter(win_lose_election == "N") %>%
+  count())
+
+house_losses <- as.numeric(house_losses)
+
+house_primaries_completed <- house_endorsements %>%
+  count()
+
+house_primaries_completed <- paste(house_primaries_completed <- house_endorsements %>%
+  count())
+
+house_primaries_completed <- as.numeric(house_primaries_completed)
+
+house_wins/house_primaries_completed
+
+##Won 96% of House races, or 102/106
+
+## How many Trump-endorsed Senate candidates have won their primaries?
+
+senate_wins <- paste(senate_endorsements %>%
+  filter(win_lose_election == "Y") %>%
+  count())
+
+senate_wins <- as.numeric(senate_wins)
+
+senate_losses <- paste(senate_endorsements %>%
+                         filter(win_lose_election == "N") %>%
+                         count())
+
+senate_losses <- as.numeric(senate_losses)
+
+senate_primaries_completed <- paste(senate_endorsements %>%
+                                      count())
+
+senate_primaries_completed <- as.numeric(senate_primaries_completed)
+
+senate_wins/senate_primaries_completed
+
+## Have won 100% of Senate races
+```
+
+

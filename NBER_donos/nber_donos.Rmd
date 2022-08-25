@@ -1,0 +1,79 @@
+---
+title: "nber_donos"
+output: html_document
+date: '2022-06-09'
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+
+lipsky <- read_csv("data/John_Lipsky.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+schmalensee <- read_csv("data/Richard_Schmalensee.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+
+blair_henry <- read_csv("data/Peter_Blair_Henry.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+mednick <- read_csv("data/Robert_Mednick.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+cooper <- read_csv("data/Kathleen_Cooper.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+dallara <- read_csv("data/Charles_Dallara.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+einhorn <- read_csv("data/Jessica_Einhorn.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+farrell <- read_csv("data/Diana_Farrell.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+foulkes <- read_csv("data/Helena_Foulkes.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+hamada <- read_csv("data/Robert_Hamada.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+mills <- read_csv("data/Karen_Mills.csv") %>%
+  clean_names() %>%
+  select(committee_id, report_year, contributor_name, committee_name_2, contribution_receipt_date, contribution_receipt_amount)
+
+
+master_list <- bind_rows(lipsky, schmalensee, blair_henry, mednick, cooper, dallara, einhorn, farrell, foulkes, hamada, mills)
+
+master_list %>%
+  group_by(committee_name_2) %>%
+  count()
+
+master_list %>%
+  filter(str_detect(committee_name_2, "BIDEN")) %>%
+  summarise(total = sum(contribution_receipt_amount))
+
+master_list %>%
+  filter(str_detect(committee_name_2, "HILLARY")) %>%
+  summarise(total = sum(contribution_receipt_amount))
+
+master_list %>%
+  filter(str_detect(committee_name_2, "TRUMP")) %>%
+  summarise(total = sum(contribution_receipt_amount))
+
+master_list %>%
+  filter(str_detect(committee_name_2, "WINRED")) %>%
+  summarise(total = sum(contribution_receipt_amount))
+```
+
