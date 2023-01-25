@@ -1,0 +1,89 @@
+---
+title: "General Dynamics Political Donations"
+author: "Stephen Neukam"
+date: "`r Sys.Date()`"
+title-block-banner: true
+format:
+  html:
+    #theme: cosmo
+    layout: full
+    self-contained: true
+    toc: true
+    toc-depth: 3
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+```{css}
+
+```
+
+```{r}
+###
+# Load libraries
+###
+library(tidyverse)
+library(janitor)
+library(data.table)
+library(rmarkdown)
+library(devtools)
+library(pacman)
+devtools::install_github("kent37/summarywidget")
+pacman::p_load(tidyverse, crosstalk, DT, lubridate, plotly, reactable, gt, summarywidget, here, glue, janitor, googlesheets4, googledrive, ggthemes, devtools, knitr, kableExtra,tidytext,textstem)
+output_formatted_table = function(table, text, label_text = NULL){
+  table %>%
+    kable(caption = text, label = label_text) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), font_size = 14, fixed_thead = T) %>%
+    scroll_box(width = "100%")
+}
+
+###
+# Loading in data
+###
+general_dynamics_donos <- read_csv("data/general_dynamics_donos.csv")
+
+general_dynamics_donos <- general_dynamics_donos %>%
+  select(committee_name, entity_type, recipient_name:recipient_zip, beneficiary_committee_name, disbursement_date:disbursement_amount, candidate_office, candidate_name)
+
+###
+# Top candidate donos from GD
+###
+top_ccm_recipients <- general_dynamics_donos %>%
+  filter(entity_type == "CCM") %>%
+  group_by(candidate_name, candidate_office) %>%
+  summarise(total = sum(disbursement_amount)) %>%
+  arrange(desc(total))
+
+###
+# Searchable, filterable and sortable table
+###
+# Remove columnDefs if you don't want to hide any columns
+candidate_donos_table <- top_ccm_recipients |>
+  datatable(
+    filter = "top",
+    extensions = c(
+      "Buttons"
+    ),
+    rownames=FALSE,
+    escape=FALSE,
+    #    style="bootstrap",
+    class="compact cell-border stripe",
+    width="100%"
+      )
+
+total_candidate_contribs <- general_dynamics_donos %>%
+  filter(entity_type == "CCM") %>%
+  summarise(total = sum(disbursement_amount))
+
+total_candidate_contribs <- paste(total_candidate_contribs)
+```
+## General Dynamics, the American company that makes the Abrams tanks that are being sent to Ukraine, has donated handsomely to the campaigns of congressional candidates. 
+Since 2016, the company has donated to `r nrow(top_ccm_recipients)` candidates running for Congress. The donations amounted to over $`r total_candidate_contribs`. Here is a searchable table of those candidates and contributions.
+
+### Table of General Dynamics candidate contributions since 2016
+```{r}
+candidate_donos_table
+```
+
+

@@ -1,0 +1,52 @@
+```{r}
+###
+# Loading libraries
+###
+
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+###
+# Loading in general dynamics donos
+###
+
+general_dynamics_donos <- read_csv("data/general_dynamics_donos.csv")
+
+general_dynamics_donos <- general_dynamics_donos %>%
+  select(committee_name, entity_type, recipient_name:recipient_zip, beneficiary_committee_name, disbursement_date:disbursement_amount, candidate_office, candidate_name)
+```
+
+```{r}
+###
+# Who/what got the most money from General Dynamics?
+###
+top_ccm_recipients <- general_dynamics_donos %>%
+  filter(entity_type == "CCM") %>%
+  group_by(candidate_name, candidate_office) %>%
+  summarise(total = sum(disbursement_amount)) %>%
+  arrange(desc(total))
+
+top_pac_recipients <- general_dynamics_donos %>%
+  filter(entity_type == "PAC") %>%
+  group_by(recipient_name) %>%
+  summarise(total = sum(disbursement_amount)) %>%
+  arrange(desc(total))
+
+top_pty_recipients <- general_dynamics_donos %>%
+  filter(entity_type == "PTY") %>%
+  group_by(recipient_name) %>%
+  summarise(total = sum(disbursement_amount)) %>%
+  arrange(desc(total))
+
+###
+# total candidate receipts
+###
+general_dynamics_donos %>%
+  filter(entity_type == "CCM") %>%
+  summarise(total = sum(disbursement_amount))
+```
+
+
+
