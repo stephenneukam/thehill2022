@@ -1,0 +1,19 @@
+```{r}
+library(tidyverse)
+library(janitor)
+```
+```{r}
+###
+# Loading in data
+###
+
+hogan_raising <- read_csv("data/hogan_data.csv")
+
+###
+# how much has he raised
+###
+
+hogan_raising %>%
+  summarise(total = sum(contribution_receipt_amount))
+```
+

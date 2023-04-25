@@ -1,0 +1,168 @@
+```{r}
+###
+# Loading in libraries
+###
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+###
+# Loading data
+###
+
+boebert_receipts <- read_csv("data/boebert.csv")
+frisch_receiepts <-read_csv("data/frisch.csv")
+
+###
+# Cleaning these datasets up a bit
+###
+
+boebert_receipts <- boebert_receipts %>%
+  mutate(candidate = "Boebert")
+
+frisch_receiepts <- frisch_receiepts %>%
+  mutate(candidate = "Frisch")
+
+boebert_receipts <- boebert_receipts %>%
+  select(entity_type, contributor_first_name, contributor_last_name, contributor_state, contribution_receipt_amount, contribution_receipt_date, candidate)
+
+frisch_receiepts <- frisch_receiepts %>%
+  select(entity_type, contributor_first_name, contributor_last_name, contributor_state, contribution_receipt_amount, contribution_receipt_date, candidate)
+```
+
+```{r}
+###
+# I am interested how the publicity of Frisch's close race against Boebert in 2022 has impacted the out-of-state focus on the race. To do that, I am going to first separate each dataset into two — one before the 2022 race and one after.
+###
+
+frisch_receiepts_pre_2023 <- frisch_receiepts %>%
+  filter(contribution_receipt_date <= '2022-12-31')
+
+frisch_receiepts_post_2023 <- frisch_receiepts %>%
+  filter(contribution_receipt_date > '2022-12-31')
+
+boebert_pre_2023 <- boebert_receipts %>%
+  filter(contribution_receipt_date <= '2022-12-31')
+
+boebert_post_2023 <- boebert_receipts %>%
+  filter(contribution_receipt_date > '2022-12-31')
+```
+
+```{r}
+###
+# A problem with the Frisch dataset is that many of the donations were routed to his campaign from ActBlue, and all of the ActBlue receipts are earmarked as coming from Massachucetts, even if they were made by someone in Colorado. This will mess with my analysis here, so I am going to filter out the ActBlue contributions. This waters down Frisch's dataset quite a bit, but it is the only way to ensure an accurate count.
+###
+frisch_receiepts_post_2023 <- frisch_receiepts_post_2023 %>%
+  filter(contributor_last_name != "ActBlue")
+
+frisch_receiepts_pre_2023 <- frisch_receiepts_pre_2023 %>%
+  filter(contributor_last_name != "ActBlue")
+```
+
+```{r}
+###
+# I want to find out what % of donations and what % of money came from out of state sources for both of the candidates. 
+###
+
+###
+# giving each contribution a y/n indicator based on whether it came from someone in or out of state
+###
+
+boebert_pre_2023 <- boebert_pre_2023 %>%
+  mutate(out_of_state = case_when(contributor_state == "CO" ~ "n",
+                                  TRUE ~ "y"))
+
+boebert_post_2023 <- boebert_post_2023 %>%
+  mutate(out_of_state = case_when(contributor_state == "CO" ~ "n",
+                                  TRUE ~ "y"))
+
+frisch_receipts_pre_2023 <- frisch_receiepts_pre_2023 %>%
+  mutate(out_of_state = case_when(contributor_state == "CO" ~ "n",
+                                  TRUE ~ "y"))
+
+frisch_receipts_post_2023 <- frisch_receiepts_post_2023 %>%
+  mutate(out_of_state = case_when(contributor_state == "CO" ~ "n",
+                                  TRUE ~ "y"))
+```
+
+```{r}
+###
+# Analysis
+###
+
+###
+# What % of contributions came from out of state for both candidates, before and after the 2022 race?
+###
+
+## Boebert before 2023
+boebert_out_of_state_pre_2023 <- as.numeric(boebert_pre_2023 %>%
+  filter(out_of_state == "y") %>%
+  count())
+
+boebert_all_pre_2023 <- as.numeric(boebert_pre_2023 %>%
+  count())
+
+boebert_pre_2023_out_of_state_perc <- boebert_out_of_state_pre_2023/boebert_all_pre_2023
+
+boebert_pre_2023_out_of_state_perc ## 60 percent of her donations came from out of state
+
+## Boebert after 2023
+boebert_out_of_state_post_2023 <- as.numeric(boebert_post_2023 %>%
+  filter(out_of_state == "y") %>%
+  count())
+
+boebert_all_post_2023 <- as.numeric(boebert_post_2023 %>%
+  count())
+
+boebert_post_2023_out_of_state_perc <- boebert_out_of_state_post_2023/boebert_all_post_2023
+
+boebert_post_2023_out_of_state_perc ## 76 percent of her donations came from out of state
+
+## Frisch before 2023
+frisch_out_of_state_pre_2023 <- as.numeric(frisch_receipts_pre_2023 %>%
+  filter(out_of_state == "y") %>%
+  count())
+
+frisch_all_pre_2023 <- as.numeric(frisch_receipts_pre_2023 %>%
+  count())
+
+frisch_pre_2023_out_of_state_perc <- frisch_out_of_state_pre_2023/frisch_all_pre_2023
+
+frisch_pre_2023_out_of_state_perc ## 59 percent of his donations came from out of state
+
+## Frisch post 2023
+frisch_out_of_state_post_2023 <- as.numeric(frisch_receipts_post_2023 %>%
+  filter(out_of_state == "y") %>%
+  count())
+
+frisch_all_post_2023 <- as.numeric(frisch_receipts_post_2023 %>%
+  count())
+
+frisch_post_2023_out_of_state_perc <- frisch_out_of_state_post_2023/frisch_all_post_2023
+
+frisch_post_2023_out_of_state_perc ## 56 percent of his donations came from out of state
+```
+```{r}
+###
+# I also want to know topline fundraising numbers. Who has raised more this year?
+###
+
+frisch_receiepts %>%
+  filter(contribution_receipt_date > '2022-12-31') %>%
+  summarise(total = sum(contribution_receipt_amount))
+
+## Frisch has raised $1,121,630 in 2023
+
+boebert_receipts %>%
+  filter(contribution_receipt_date > '2022-12-31') %>%
+  summarise(total = sum(contribution_receipt_amount))
+
+## ## Boebert has raised $821,042.9 in 2023
+
+```
+
+
+
+
+
